@@ -1,0 +1,381 @@
+{
+	"info": {
+		"_postman_id": "dd6204f7-c21f-4d80-8dd3-5d08b87a2fe9",
+		"name": "Tema 18 - Oxana Storoj",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "37042503"
+	},
+	"item": [
+		{
+			"name": "Register",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//Setam baseURL\r",
+							"\r",
+							"let baseURL = pm.variables.get(\"baseURL\");\r",
+							"if (!baseURL) {\r",
+							"  pm.variables.set(\"baseURL\", \"https://test.hapifyme.com/api\"); // fallback\r",
+							"}\r",
+							"\r",
+							"\r",
+							"console.log(\"baseURL:\", pm.variables.get(\"baseURL\"));\r",
+							"console.log(\"Request URL:\", pm.request.url.toString());\r",
+							"\r",
+							"\r",
+							"\r",
+							"// Generăm un timestamp\r",
+							"var timestamp = new Date().getTime();\r",
+							"\r",
+							"// Setăm o variabilă de mediu\r",
+							"pm.environment.set(\"email_unic\", \"user_\" + timestamp + \"@test.com\");\r",
+							"\r",
+							"// Generăm un prenume și un nume unic\r",
+							"pm.environment.set(\"first_name\", `John${timestamp}`);\r",
+							"pm.environment.set(\"last_name\", `Doe${timestamp}`);\r",
+							"\r",
+							"// Funcție pentru generarea unei parole puternice\r",
+							"function generateStrongPassword(length = 12) {\r",
+							"    let chars = \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+?><:{}[]\";\r",
+							"    let password = \"\";\r",
+							"    let hasLower = false, hasUpper = false, hasNumber = false, hasSpecial = false;\r",
+							"\r",
+							"    while (!(hasLower && hasUpper && hasNumber && hasSpecial)) {\r",
+							"        password = \"\";\r",
+							"        hasLower = hasUpper = hasNumber = hasSpecial = false;\r",
+							"\r",
+							"        for (let i = 0; i < length; i++) {\r",
+							"            let char = chars.charAt(Math.floor(Math.random() * chars.length));\r",
+							"            password += char;\r",
+							"            if (/[a-z]/.test(char)) hasLower = true;\r",
+							"            if (/[A-Z]/.test(char)) hasUpper = true;\r",
+							"            if (/[0-9]/.test(char)) hasNumber = true;\r",
+							"            if (/[!@#$%^&*()_+?><:{}[\\]]/.test(char)) hasSpecial = true;\r",
+							"        }\r",
+							"    }\r",
+							"    return password;\r",
+							"}\r",
+							"\r",
+							"let generatedPassword = generateStrongPassword();\r",
+							"pm.environment.set(\"password\", generatedPassword);\r",
+							"\r",
+							"// Afișăm în consolă datele generate pentru debugging\r",
+							"console.log(\"Prenume generat: \", pm.environment.get(\"first_name\"));\r",
+							"console.log(\"Nume generat: \", pm.environment.get(\"last_name\"));\r",
+							"console.log(\"Email generat: \", pm.environment.get(\"email\"));\r",
+							"console.log(\"Parolă generată: \", pm.environment.get(\"password\"));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parsăm răspunsul API-ului\r",
+							"let response = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response time is less than 500ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"// Verificăm dacă cererea a avut succes\r",
+							"if (pm.response.code === 201 && response.status === \"success\") {\r",
+							"    pm.environment.set(\"api_key\", response.api_key);\r",
+							"    pm.environment.set(\"confirmation_token\", response.confirmation_token);\r",
+							"    pm.environment.set(\"username\", response.username);\r",
+							"    pm.environment.set(\"user_id\", response.user_id);\r",
+							"\r",
+							"    console.log(\"Utilizator înregistrat cu succes:\");\r",
+							"    console.log(\"Cheie API:\", response.api_key);\r",
+							"    console.log(\"Token de confirmare:\", response.confirmation_token);\r",
+							"    console.log(\"Username:\", response.username);\r",
+							"    console.log(\"ID Utilizator:\", response.user_id);\r",
+							"} else {\r",
+							"    console.log(\"Înregistrare eșuată:\", response.message);\r",
+							"}\r",
+							"\r",
+							"// Verificam daca raspounsul contine api_key, confirmation_token si user_id si altele\r",
+							"    pm.test(\"Răspunsul conține câmpurile obligatorii\", function () {\r",
+							"    pm.expect(response).to.have.property(\"status\");\r",
+							"    pm.expect(response).to.have.property(\"message\");\r",
+							"    pm.expect(response).to.have.property(\"api_key\");\r",
+							"    pm.expect(response).to.have.property(\"confirmation_token\");\r",
+							"    pm.expect(response).to.have.property(\"username\");\r",
+							"\r",
+							"    pm.test(\"Body matches string\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"User registered successfully\");\r",
+							"});\r",
+							"\r",
+							"\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"first_name\": \"{{first_name}}\",\r\n  \"last_name\": \"{{last_name}}\",\r\n  \"email\": \"{{email_unic}}\",  // { {$randomEmail} }\r\n  \"password\": \"{{password}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/user/register.php",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"user",
+						"register.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RegisterConfirm",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/user/confirm_email.php?token={{confirmation_token}}",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"user",
+						"confirm_email.php"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "{{confirmation_token}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Afișăm în consolă datele generate pentru debugging\r",
+							"console.log(\"Prenume generat: \", pm.environment.get(\"first_name\"));\r",
+							"console.log(\"Nume generat: \", pm.environment.get(\"last_name\"));\r",
+							"console.log(\"Email generat: \", pm.environment.get(\"email\"));\r",
+							"console.log(\"Parolă generată: \", pm.environment.get(\"password\"));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parsăm răspunsul API-ului\r",
+							"let response = pm.response.json();\r",
+							"\r",
+							"// Verificăm dacă login-ul a avut succes\r",
+							"if (pm.response.code === 200 && response.status === \"success\") {\r",
+							"    console.log(\"✅ Autentificare reușită pentru:\", response.user.username);\r",
+							"\r",
+							"    // Stocăm datele utilizatorului în variabile de mediu Postman\r",
+							"    pm.environment.set(\"user_id\", response.user.id);\r",
+							"    pm.environment.set(\"user_email\", response.user.email);\r",
+							"    pm.environment.set(\"user_first_name\", response.user.first_name);\r",
+							"    pm.environment.set(\"user_last_name\", response.user.last_name);\r",
+							"    pm.environment.set(\"user_profile_pic\", response.user.profile_pic);\r",
+							"    pm.environment.set(\"bearer_token\", response.token);\r",
+							"} else {\r",
+							"    console.log(\"⚠️ Eroare la autentificare:\", response.message);\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"{{username}}\",\n    \"password\": \"{{password}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseURL}}/user/login.php",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"user",
+						"login.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SeeProfile",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let response = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 201\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Verificăm dacă cererea a avut succes\r",
+							"if (pm.response.code === 200 && response.status === \"success\") {\r",
+							"    pm.environment.set(\"email\", response.user.email);\r",
+							"\r",
+							"    console.log(\"email: \", response.user.email);\r",
+							"\r",
+							"} else {\r",
+							"    console.log(\"Profilul nu poate fi vizualizat:\", response.message);\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "c232b56c932c6983e991773c655574c6964ad0763beccf97f4c88307e2d546b8",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseURL}}/user/get_profile.php?user_id={{user_id}}",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"user",
+						"get_profile.php"
+					],
+					"query": [
+						{
+							"key": "user_id",
+							"value": "{{user_id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateProfile",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{api_key}} ",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"user_id\": \"{{user_id}}\",\r\n  \"first_name\": \"NumeNou2\",\r\n  \"last_name\": \"PrenumeNou2\",\r\n  \"email\": \"{{email}}\",\r\n  \"profile_pic\": \"string\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/user/update_profile.php",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"user",
+						"update_profile.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteProfile",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{bearer_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{bearer_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseURL}}/user/delete_profile.php",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"user",
+						"delete_profile.php"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
